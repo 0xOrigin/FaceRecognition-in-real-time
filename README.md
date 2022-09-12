@@ -2,7 +2,7 @@
 
 A simple Face Recognition in real-time written in Python.
 
-# Dependencies
+## Dependencies
 
 - Python 3.10
 - Numpy `pip3 install numpy`
