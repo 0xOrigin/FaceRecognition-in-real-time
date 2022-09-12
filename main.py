@@ -1,9 +1,12 @@
 from FaceDetector import FaceDetector
 from Utilities import Utilities
+import sys
 
 
 def choose_camera():
-    camera_index = int(input("Choose the camera index" + str(Utilities.cameras) + ": "))
+    camera_index = int(input("Choose the camera index" + str(Utilities.cameras) + " or -1 to exit: "))
+    if camera_index == -1:
+        sys.exit(0)
     if Utilities.is_camera_available(camera_index):
         return camera_index
     else:

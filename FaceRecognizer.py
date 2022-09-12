@@ -1,8 +1,8 @@
-import cv2
-import face_recognition
-import os, sys
 import glob
+import os, sys
+import cv2
 import numpy as np
+import face_recognition
 
 
 class FaceRecognizer:
@@ -13,7 +13,6 @@ class FaceRecognizer:
         self.known_face_names = []
         self.frame_resizing = 0.35
 
-
     def load_encoding_images(self):
         self.known_face_encodings.clear()
         self.known_face_names.clear()
@@ -21,7 +20,6 @@ class FaceRecognizer:
         for img_path in self.images_path:
             self.add_known_face_encoding(img_path)
             self.add_known_face_name(img_path)
-
 
     def detect_known_faces(self, frame):
         small_frame = cv2.resize(frame, (0, 0), fx=self.frame_resizing, fy=self.frame_resizing)
@@ -48,16 +46,14 @@ class FaceRecognizer:
         # Convert to numpy array to adjust coordinates with frame resizing quickly
         face_locations = np.array(face_locations)
         face_locations = face_locations / self.frame_resizing
-        
+
         return face_locations.astype(int), face_names
 
-    
     def add_known_face_encoding(self, img_path):
         img = cv2.imread(img_path)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_encoding = face_recognition.face_encodings(rgb_img)[0]
         self.known_face_encodings.append(img_encoding)
-
 
     def add_known_face_name(self, img_path):
         basename = os.path.basename(img_path)
