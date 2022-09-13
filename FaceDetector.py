@@ -1,5 +1,4 @@
-import os
-os.environ["OPENCV_LOG_LEVEL"] = "SILENT"
+import os; os.environ["OPENCV_LOG_LEVEL"] = "SILENT"
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime, timedelta
@@ -64,7 +63,6 @@ class FaceDetector:
         face_locations, face_names = self.face_recognizer.detect_known_faces(frame)
 
         for face_loc, name in zip(face_locations, face_names):
-
             top, left, right, bottom = face_loc[0], face_loc[1], face_loc[2], face_loc[3]
             self.color_of_rectangle = (0, 0, 200)
             if name != "Unknown":
