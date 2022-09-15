@@ -1,9 +1,12 @@
 import glob
-import os, sys
+import os
+import sys
 from threading import Lock
-import cv2
-import numpy as np
+
 import face_recognition
+import numpy as np
+
+from Utilities import FrameUtilities
 
 
 class FaceRecognizer:
@@ -21,7 +24,7 @@ class FaceRecognizer:
         self.images_path = glob.glob(os.path.join(self.abs_path, images_path, "*.*"))
         self.known_face_encodings = []
         self.known_face_names = []
-        self.frame_resizing = 0.40
+        self.frame_resizing = 0.50
 
     def load_encoding_images(self):
         self.known_face_encodings.clear()
@@ -32,11 +35,11 @@ class FaceRecognizer:
             self.add_known_face_name(img_path)
 
     def detect_known_faces(self, frame):
-        small_frame = cv2.resize(frame, (0, 0), fx=self.frame_resizing, fy=self.frame_resizing)
-        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        small_frame = FrameUtilities.resize_frame(frame, self.frame_resizing)
+        rgb_small_frame = FrameUtilities.convert_to_rgb(small_frame)
 
         # Find all the faces and face encodings in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_small_frame, number_of_times_to_upsample=2, model="hog")
+        face_locations = face_recognition.face_locations(rgb_small_frame, number_of_times_to_upsample=1, model="hog")
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
         face_names = []
@@ -60,8 +63,8 @@ class FaceRecognizer:
         return face_locations.astype(int), face_names
 
     def add_known_face_encoding(self, img_path):
-        img = cv2.imread(img_path)
-        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = FrameUtilities.read_image(img_path)
+        rgb_img = FrameUtilities.convert_to_rgb(img)
         img_encoding = face_recognition.face_encodings(rgb_img)[0]
         self.known_face_encodings.append(img_encoding)
 
