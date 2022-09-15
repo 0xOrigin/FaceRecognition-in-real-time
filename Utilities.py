@@ -1,4 +1,3 @@
-import sys
 from Camera import Camera
 import cv2
 
@@ -45,13 +44,13 @@ class FrameUtilities:
 
     @staticmethod
     def draw_rectangle(frame, location, color, thickness):
-        top, left, right, bottom = location
-        cv2.rectangle(frame, (bottom, top), (left, right), color, thickness)
+        top, right, bottom, left = location
+        cv2.rectangle(frame, (left, top), (right, bottom), color, thickness)
 
     @staticmethod
     def draw_text(frame, text, location, color, font_scale, thickness):
-        top, left, right, bottom = location
-        cv2.putText(frame, text, (bottom, top-10), cv2.FONT_HERSHEY_DUPLEX, font_scale, color, thickness)
+        top, right, bottom, left = location
+        cv2.putText(frame, text, (left, top-10), cv2.FONT_HERSHEY_DUPLEX, font_scale, color, thickness)
 
     @staticmethod
     def show_frame(window_name, frame):

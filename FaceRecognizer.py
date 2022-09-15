@@ -12,19 +12,19 @@ from Utilities import FrameUtilities
 class FaceRecognizer:
     __instance = None
     __acquire_lock = Lock()
+    known_face_encodings = []
+    known_face_names = []
 
     def __new__(cls, *args, **kwargs):
         with FaceRecognizer.__acquire_lock:
-            if FaceRecognizer.__instance is None:
-                FaceRecognizer.__instance = object.__new__(cls)
-        return FaceRecognizer.__instance
+            if cls.__instance is None:
+                cls.__instance = super(FaceRecognizer, cls).__new__(cls)
+        return cls.__instance
 
     def __init__(self, images_path):
         self.abs_path = os.path.abspath(sys.argv[0] + "/..")
         self.images_path = glob.glob(os.path.join(self.abs_path, images_path, "*.*"))
-        self.known_face_encodings = []
-        self.known_face_names = []
-        self.frame_resizing = 0.50
+        self.frame_resizing = 1.0
 
     def load_encoding_images(self):
         self.known_face_encodings.clear()
@@ -39,12 +39,12 @@ class FaceRecognizer:
         rgb_small_frame = FrameUtilities.convert_to_rgb(small_frame)
 
         # Find all the faces and face encodings in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_small_frame, number_of_times_to_upsample=1, model="hog")
+        face_locations = face_recognition.face_locations(rgb_small_frame, number_of_times_to_upsample=1, model="cnn")
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
         face_names = []
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.45)
+            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.49)
             name = "Unknown"
 
             try:
