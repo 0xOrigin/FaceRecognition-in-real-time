@@ -9,7 +9,7 @@ class CameraUtilities:
 
     @staticmethod
     def is_camera_timeout(camera_index):
-        return Camera(camera_index).is_frame_readable()
+        return not Camera(camera_index).is_frame_readable()
 
     @staticmethod
     def is_camera_available(camera_index):

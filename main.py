@@ -8,10 +8,10 @@ def choose_camera():
     if camera_index == -1:
         sys.exit(0)
     if CameraUtilities.is_camera_timeout(camera_index):
-        return camera_index
-    else:
         print("Camera is not available, please choose another camera.")
         return choose_camera()
+    else:
+        return camera_index
 
 
 def main():
