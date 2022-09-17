@@ -53,12 +53,24 @@ class FrameUtilities:
         cv2.putText(frame, text, (left, top-10), cv2.FONT_HERSHEY_DUPLEX, font_scale, color, thickness)
 
     @staticmethod
+    def create_window(window_name):
+        cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+
+    @staticmethod
     def show_frame(window_name, frame):
         cv2.imshow(window_name, frame)
 
     @staticmethod
     def is_exit_key_pressed():
         return cv2.waitKey(1) == 27  # ESC
+
+    @staticmethod
+    def is_window_visible(window_name):
+        return cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) > 0
+
+    @staticmethod
+    def destroy_window(window_name):
+        cv2.destroyWindow(window_name)
 
     @staticmethod
     def destroy_all_windows():

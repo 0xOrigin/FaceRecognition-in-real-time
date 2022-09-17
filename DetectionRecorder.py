@@ -1,4 +1,4 @@
-from threading import Lock
+from threading import RLock
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ class Status(Enum):
 
 class FacesDictionary:
     __instance = None
-    __acquire_lock = Lock()
+    __acquire_lock = RLock()
     dictionary = {}
 
     def __new__(cls, *args, **kwargs):

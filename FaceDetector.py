@@ -6,11 +6,11 @@ from DetectionRecorder import FacesDictionary, Actions
 
 
 class FaceDetector:
-    def __init__(self, images_path, camera_index=0, window_name="Face Detector"):
+    def __init__(self, images_path, cameras_indexes: list, window_name="Face Detector"):
         self.face_recognizer = FaceRecognizer(images_path)
         self.face_recognizer.load_encoding_images()
-        self.camera = Camera(camera_index)
-        self.window_name = window_name + " - Camera: " + str(camera_index)
+        self.cameras = [Camera(camera_index) for camera_index in cameras_indexes]
+        self.window_name = window_name
         self.colors = {"red": (0, 0, 255), "green": (0, 255, 0)}
         self.current_color = self.colors["red"]
         self.detected_faces = FacesDictionary()
@@ -23,7 +23,8 @@ class FaceDetector:
 
     def detection_loop(self):
         while not self.stopped:
-            self.detect_faces()
+            for camera in self.cameras:
+                self.detect_faces(camera)
             if FrameUtilities.is_exit_key_pressed():
                 break
 
@@ -35,8 +36,11 @@ class FaceDetector:
 
         self.current_color = self.colors["green"]
 
-    def detect_faces(self):
-        is_frame_readable, frame = self.camera.read_frame()
+    def detect_faces(self, camera):
+        is_frame_readable, frame = camera.read_frame()
+        window_name = self.form_window_name(camera.index)
+        FrameUtilities.create_window(window_name)
+
         if is_frame_readable:
             face_locations, face_names = self.face_recognizer.detect_known_faces(frame)
 
@@ -49,10 +53,13 @@ class FaceDetector:
                 FrameUtilities.draw_text(frame, name, face_loc, self.current_color, font_scale=0.7, thickness=2)
                 FrameUtilities.draw_rectangle(frame, face_loc, self.current_color, thickness=2)
 
-            FrameUtilities.show_frame(self.window_name, frame)
+            FrameUtilities.show_frame(window_name, frame)
         else:
-            print("Camera {} is not readable".format(self.camera.index))
-            self.stop()
+            print("Camera {} is not readable".format(camera.index))
+            if FrameUtilities.is_window_visible(window_name):
+                FrameUtilities.destroy_window(window_name)
+            self.cameras.remove(camera)
+            # self.stop()
 
     def add_face(self, image_path):
         self.face_recognizer.add_known_face_encoding(image_path)
@@ -65,6 +72,10 @@ class FaceDetector:
     def stop(self):
         self.stopped = True
 
+    def form_window_name(self, camera_index):
+        return self.window_name + " - Camera: " + str(camera_index)
+
     def __del__(self):
-        self.camera.release()
+        for camera in self.cameras:
+            camera.release()
         FrameUtilities.destroy_all_windows()

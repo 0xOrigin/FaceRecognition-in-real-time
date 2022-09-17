@@ -17,8 +17,10 @@ def choose_camera():
 def main():
     path = "images/"
     print("Number of installed cameras is: {}".format(CameraUtilities.count_cameras()))
-    camera_index = choose_camera()
-    face_detector = FaceDetector(path, camera_index, window_name="Face Detector")
+    cameras = list()
+    cameras.append(0)
+    cameras.append(1)
+    face_detector = FaceDetector(path, cameras, window_name="Face Detector")
     face_detector.detection_loop()
     face_detector.add_face(face_detector.get_absolute_path(path + "another_image/" + "Ahmed Ezzat Nasr.jpg"))
 

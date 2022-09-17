@@ -1,7 +1,7 @@
 import glob
 import os
 import sys
-from threading import Lock
+from threading import RLock
 
 import face_recognition
 import numpy as np
@@ -11,7 +11,7 @@ from Utilities import FrameUtilities
 
 class FaceRecognizer:
     __instance = None
-    __acquire_lock = Lock()
+    __acquire_lock = RLock()
     known_face_encodings = []
     known_face_names = []
 
@@ -51,7 +51,7 @@ class FaceRecognizer:
 
         face_names = []
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.49)
+            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.48)
             name = "Unknown"
 
             first_match_index = self.get_first_match_index(matches)
