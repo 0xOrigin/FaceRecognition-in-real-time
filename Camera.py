@@ -4,7 +4,8 @@ import cv2
 
 class Camera:
     def __init__(self, camera_index=0):
-        self.cap = cv2.VideoCapture(camera_index)
+        self.index = camera_index
+        self.cap = cv2.VideoCapture(self.index)
 
     def get_capture(self):
         return self.cap
@@ -16,7 +17,7 @@ class Camera:
         return self.cap.read()[0]
 
     def read_frame(self):
-        return self.cap.read()[1]
+        return self.cap.read()
 
     def release(self):
         self.cap.release()
