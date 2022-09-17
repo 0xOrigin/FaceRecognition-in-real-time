@@ -29,10 +29,17 @@ class FaceRecognizer:
     def load_encoding_images(self):
         self.known_face_encodings.clear()
         self.known_face_names.clear()
-
         for img_path in self.images_path:
             self.add_known_face_encoding(img_path)
             self.add_known_face_name(img_path)
+
+    @staticmethod
+    def get_first_match_index(matches_list):
+        try:
+            first_match_index = matches_list.index(True)
+        except ValueError:
+            first_match_index = -1
+        return first_match_index
 
     def detect_known_faces(self, frame):
         small_frame = FrameUtilities.resize_frame(frame, self.frame_resizing)
@@ -47,11 +54,7 @@ class FaceRecognizer:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.49)
             name = "Unknown"
 
-            try:
-                first_match_index = matches.index(True)
-            except Exception as ex:
-                first_match_index = -1
-
+            first_match_index = self.get_first_match_index(matches)
             if first_match_index > -1 and matches[first_match_index]:
                 name = self.known_face_names[first_match_index]
             face_names.append(name)

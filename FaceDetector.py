@@ -6,10 +6,11 @@ from DetectionRecorder import FacesDictionary, Actions
 
 
 class FaceDetector:
-    def __init__(self, images_path, camera_index=0):
+    def __init__(self, images_path, camera_index=0, window_name="Face Detector"):
         self.face_recognizer = FaceRecognizer(images_path)
         self.face_recognizer.load_encoding_images()
         self.camera = Camera(camera_index)
+        self.window_name = window_name + " - Camera: " + str(camera_index)
         self.colors = {"red": (0, 0, 255), "green": (0, 255, 0)}
         self.current_color = self.colors["red"]
         self.detected_faces = FacesDictionary()
@@ -46,7 +47,7 @@ class FaceDetector:
             FrameUtilities.draw_text(frame, name, face_loc, self.current_color, font_scale=0.7, thickness=2)
             FrameUtilities.draw_rectangle(frame, face_loc, self.current_color, thickness=2)
 
-        FrameUtilities.show_frame("Face Detector", frame)
+        FrameUtilities.show_frame(self.window_name, frame)
 
     def add_face(self, image_path):
         self.face_recognizer.add_known_face_encoding(image_path)
