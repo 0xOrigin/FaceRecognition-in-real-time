@@ -51,7 +51,7 @@ class FaceRecognizer:
 
         face_names = []
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.48)
+            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.47)
             name = "Unknown"
 
             first_match_index = self.get_first_match_index(matches)

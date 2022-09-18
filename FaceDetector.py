@@ -24,26 +24,18 @@ class FaceDetector:
     def detection_loop(self):
         while not self.stopped:
             for camera in self.cameras:
-                self.detect_faces(camera)
+                if not camera.stopped:
+                    self.detect_faces(camera)
             if FrameUtilities.is_exit_key_pressed():
-                break
-
-    def detection_action(self, name):
-        if not self.detected_faces.is_registered(name):
-            Actions.register_face(name)
-        elif Actions.is_exceeded_waiting_time(name, self.number_of_minutes_to_wait, self.number_of_seconds_to_wait):
-            Actions.toggle_status(name)
-
-        self.current_color = self.colors["green"]
+                self.stop()
 
     def detect_faces(self, camera):
-        is_frame_readable, frame = camera.read_frame()
+        is_camera_online, frame = camera.read_frame()
         window_name = self.form_window_name(camera.index)
         FrameUtilities.create_window(window_name)
 
-        if is_frame_readable:
+        if is_camera_online:
             face_locations, face_names = self.face_recognizer.detect_known_faces(frame)
-
             for face_loc, name in zip(face_locations, face_names):
                 self.current_color = self.colors["red"]
 
@@ -52,30 +44,49 @@ class FaceDetector:
 
                 FrameUtilities.draw_text(frame, name, face_loc, self.current_color, font_scale=0.7, thickness=2)
                 FrameUtilities.draw_rectangle(frame, face_loc, self.current_color, thickness=2)
-
             FrameUtilities.show_frame(window_name, frame)
         else:
-            print("Camera {} is not readable".format(camera.index))
+            print("Camera {} is not reachable".format(camera.index))
+            camera.stop()
             if FrameUtilities.is_window_visible(window_name):
                 FrameUtilities.destroy_window(window_name)
-            self.cameras.remove(camera)
-            # self.stop()
+            if not any(camera.online for camera in self.cameras):
+                self.stop()
+
+    def detection_action(self, name):
+        if not self.detected_faces.is_registered(name):
+            Actions.register_face(name)
+        elif Actions.is_exceeded_waiting_time(name, self.number_of_minutes_to_wait, self.number_of_seconds_to_wait):
+            Actions.toggle_status(name)
+        self.current_color = self.colors["green"]
 
     def add_face(self, image_path):
         self.face_recognizer.add_known_face_encoding(image_path)
         self.face_recognizer.add_known_face_name(image_path)
-        self.detection_loop()
+        self.start()
 
     def start(self):
+        [camera.start() for camera in self.cameras]
         self.stopped = False
+        self.detection_loop()
 
     def stop(self):
         self.stopped = True
+        [camera.stop() for camera in self.cameras]
 
     def form_window_name(self, camera_index):
         return self.window_name + " - Camera: " + str(camera_index)
 
+    def get_camera_obj(self, camera_index):
+        return next(camera for camera in self.cameras if camera.index == camera_index)
+
+    def retest_camera(self, camera_index):
+        try:
+            camera = self.get_camera_obj(camera_index)
+            camera.set_camera_status()
+            camera.stopped = False
+        except StopIteration as ex:
+            print("Camera {} is not found".format(camera_index))
+
     def __del__(self):
-        for camera in self.cameras:
-            camera.release()
         FrameUtilities.destroy_all_windows()

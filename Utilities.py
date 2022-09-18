@@ -1,4 +1,3 @@
-from Camera import Camera
 import cv2
 
 
@@ -7,12 +6,16 @@ class CameraUtilities:
     MAX_CAMERAS = 100
 
     @staticmethod
+    def get_capture(camera_index):
+        return cv2.VideoCapture(camera_index)
+
+    @staticmethod
     def is_camera_timeout(camera_index):
-        return not Camera(camera_index).is_frame_readable()
+        return not CameraUtilities.get_capture(camera_index).read()[0]
 
     @staticmethod
     def is_camera_available(camera_index):
-        return Camera(camera_index).is_opened()
+        return CameraUtilities.get_capture(camera_index).isOpened()
 
     @staticmethod
     def add_camera(camera_index):
@@ -59,6 +62,10 @@ class FrameUtilities:
     @staticmethod
     def show_frame(window_name, frame):
         cv2.imshow(window_name, frame)
+
+    @staticmethod
+    def save_frame(frame, file_path, file_name):
+        cv2.imwrite(file_path + "/" + file_name, frame)
 
     @staticmethod
     def is_exit_key_pressed():
