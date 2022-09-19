@@ -76,3 +76,7 @@ class FaceRecognizer:
         basename = os.path.basename(img_path)
         (filename, ext) = os.path.splitext(basename)
         self.known_face_names.append(filename)
+
+    def add_face(self, img_path):
+        self.add_known_face_encoding(img_path)
+        self.add_known_face_name(img_path)

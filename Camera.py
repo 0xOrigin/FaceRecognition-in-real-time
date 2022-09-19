@@ -8,25 +8,27 @@ class Camera:
         self.index = camera_index
         self.online = None
         self.frame = None
-        self.stopped = False
+        self.__stopped = True
         self.cap = cv2.VideoCapture(self.index)
         self.thread = Thread(target=self.get_camera_status, args=())
         self.set_camera_status()
 
     def start(self):
+        if self.stopped():
+            self.toggle_state()
         if self.online and not self.thread.is_alive():
-            self.stopped = False
             self.thread = Thread(target=self.update, args=())
             self.thread.daemon = True
             self.thread.start()
 
     def stop(self):
-        self.stopped = True
+        if not self.stopped():
+            self.toggle_state()
         if self.thread.is_alive():
             self.thread.join()
 
     def update(self):
-        while self.online and not self.stopped:
+        while self.online and not self.stopped():
             self.online, self.frame = self.cap.read()
 
     def is_opened(self):
@@ -44,6 +46,12 @@ class Camera:
 
     def read_frame(self):
         return self.online, self.frame
+
+    def toggle_state(self):
+        self.__stopped = not self.__stopped
+
+    def stopped(self):
+        return self.__stopped
 
     def release(self):
         self.cap.release()

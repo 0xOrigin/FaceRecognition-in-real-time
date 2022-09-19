@@ -1,5 +1,5 @@
 import os
-from Camera import Camera
+from CamerasControl import CamerasControl
 from Utilities import FrameUtilities
 from FaceRecognizer import FaceRecognizer
 from DetectionRecorder import FacesDictionary, Actions
@@ -7,26 +7,25 @@ from DetectionRecorder import FacesDictionary, Actions
 
 class FaceDetector:
     def __init__(self, images_path, cameras_indexes: set, window_name="Face Detector"):
-        cameras_indexes = set(cameras_indexes)
         self.face_recognizer = FaceRecognizer(images_path)
         self.face_recognizer.load_encoding_images()
-        self.cameras = [Camera(camera_index) for camera_index in cameras_indexes]
+        self.cameras_control = CamerasControl(set(cameras_indexes))
         self.window_name = window_name
         self.colors = {"red": (0, 0, 255), "green": (0, 255, 0)}
         self.current_color = self.colors["red"]
         self.detected_faces = FacesDictionary()
         self.number_of_minutes_to_wait = 0
         self.number_of_seconds_to_wait = 10
-        self.stopped = False
+        self.__stopped = True
 
     def get_absolute_path(self, relative_path):
         return os.path.abspath(os.path.join(self.face_recognizer.abs_path, relative_path))
 
     def detection_loop(self):
-        if self.cameras:
-            while not self.stopped:
-                for camera in self.cameras:
-                    if not camera.stopped:
+        if not self.cameras_control.empty():
+            while not self.stopped():
+                for camera in self.cameras_control.cameras:
+                    if not camera.stopped():
                         self.detect_faces(camera)
                 if FrameUtilities.is_exit_key_pressed():
                     self.stop()
@@ -55,7 +54,7 @@ class FaceDetector:
             camera.stop()
             if FrameUtilities.is_window_visible(window_name):
                 FrameUtilities.destroy_window(window_name)
-            if not any(camera.online for camera in self.cameras):
+            if not any(camera.online for camera in self.cameras_control.cameras):
                 self.stop()
 
     def detection_action(self, name):
@@ -66,50 +65,26 @@ class FaceDetector:
         self.current_color = self.colors["green"]
 
     def add_face(self, image_path):
-        self.face_recognizer.add_known_face_encoding(image_path)
-        self.face_recognizer.add_known_face_name(image_path)
+        self.face_recognizer.add_face(image_path)
         self.start()
 
     def start(self):
-        [camera.start() for camera in self.cameras]
-        self.stopped = False
+        self.cameras_control.start()
+        self.toggle_state()
         self.detection_loop()
 
     def stop(self):
-        self.stopped = True
-        [camera.stop() for camera in self.cameras]
+        self.toggle_state()
+        self.cameras_control.stop()
+
+    def toggle_state(self):
+        self.__stopped = not self.__stopped
+
+    def stopped(self):
+        return self.__stopped
 
     def form_window_name(self, camera_index):
         return self.window_name + " - Camera: " + str(camera_index)
-
-    def get_camera_obj(self, camera_index):
-        return next(camera for camera in self.cameras if camera.index == camera_index)
-
-    def retest_camera(self, camera_index):
-        try:
-            camera = self.get_camera_obj(camera_index)
-            if camera.stopped:
-                camera.set_camera_status()
-                camera.stopped = False
-        except StopIteration as ex:
-            print("Camera {} is not found".format(camera_index))
-
-    def add_camera(self, camera_index):
-        try:
-            camera = self.get_camera_obj(camera_index)
-            print("Camera {} is already added".format(camera.index))
-        except StopIteration as ex:
-            new_camera = Camera(camera_index)
-            new_camera.start()
-            self.cameras.append(new_camera)
-
-    def remove_camera(self, camera_index):
-        try:
-            camera = self.get_camera_obj(camera_index)
-            camera.stop()
-            self.cameras.remove(camera)
-        except StopIteration as ex:
-            print("Camera {} is not found".format(camera_index))
 
     def __del__(self):
         FrameUtilities.destroy_all_windows()
