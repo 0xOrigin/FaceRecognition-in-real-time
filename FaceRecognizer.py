@@ -32,6 +32,7 @@ class FaceRecognizer:
         for img_path in self.images_path:
             self.add_known_face_encoding(img_path)
             self.add_known_face_name(img_path)
+        print("Loaded {} images.".format(len(self.images_path)))
 
     @staticmethod
     def get_first_match_index(matches_list):

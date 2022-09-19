@@ -2,7 +2,7 @@ import cv2
 
 
 class CameraUtilities:
-    cameras = []
+    cameras = set()
     MAX_CAMERAS = 100
 
     @staticmethod
@@ -20,7 +20,7 @@ class CameraUtilities:
     @staticmethod
     def add_camera(camera_index):
         if CameraUtilities.is_camera_available(camera_index):
-            CameraUtilities.cameras.append(camera_index)
+            CameraUtilities.cameras.add(camera_index)
 
     @staticmethod
     def count_cameras():

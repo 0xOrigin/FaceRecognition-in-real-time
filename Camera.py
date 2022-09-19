@@ -10,11 +10,11 @@ class Camera:
         self.frame = None
         self.stopped = False
         self.cap = cv2.VideoCapture(self.index)
-        self.thread = None
+        self.thread = Thread(target=self.get_camera_status, args=())
         self.set_camera_status()
 
     def start(self):
-        if self.online:
+        if self.online and not self.thread.is_alive():
             self.stopped = False
             self.thread = Thread(target=self.update, args=())
             self.thread.daemon = True
@@ -39,7 +39,8 @@ class Camera:
         self.thread = Thread(target=self.get_camera_status, args=())
         self.thread.daemon = True
         self.thread.start()
-        self.thread.join()
+        if self.thread.is_alive():
+            self.thread.join()
 
     def read_frame(self):
         return self.online, self.frame

@@ -6,7 +6,8 @@ from DetectionRecorder import FacesDictionary, Actions
 
 
 class FaceDetector:
-    def __init__(self, images_path, cameras_indexes: list, window_name="Face Detector"):
+    def __init__(self, images_path, cameras_indexes: set, window_name="Face Detector"):
+        cameras_indexes = set(cameras_indexes)
         self.face_recognizer = FaceRecognizer(images_path)
         self.face_recognizer.load_encoding_images()
         self.cameras = [Camera(camera_index) for camera_index in cameras_indexes]
@@ -22,12 +23,16 @@ class FaceDetector:
         return os.path.abspath(os.path.join(self.face_recognizer.abs_path, relative_path))
 
     def detection_loop(self):
-        while not self.stopped:
-            for camera in self.cameras:
-                if not camera.stopped:
-                    self.detect_faces(camera)
-            if FrameUtilities.is_exit_key_pressed():
-                self.stop()
+        if self.cameras:
+            while not self.stopped:
+                for camera in self.cameras:
+                    if not camera.stopped:
+                        self.detect_faces(camera)
+                if FrameUtilities.is_exit_key_pressed():
+                    self.stop()
+        else:
+            print("No cameras are available")
+            self.stop()
 
     def detect_faces(self, camera):
         is_camera_online, frame = camera.read_frame()
@@ -83,8 +88,26 @@ class FaceDetector:
     def retest_camera(self, camera_index):
         try:
             camera = self.get_camera_obj(camera_index)
-            camera.set_camera_status()
-            camera.stopped = False
+            if camera.stopped:
+                camera.set_camera_status()
+                camera.stopped = False
+        except StopIteration as ex:
+            print("Camera {} is not found".format(camera_index))
+
+    def add_camera(self, camera_index):
+        try:
+            camera = self.get_camera_obj(camera_index)
+            print("Camera {} is already added".format(camera.index))
+        except StopIteration as ex:
+            new_camera = Camera(camera_index)
+            new_camera.start()
+            self.cameras.append(new_camera)
+
+    def remove_camera(self, camera_index):
+        try:
+            camera = self.get_camera_obj(camera_index)
+            camera.stop()
+            self.cameras.remove(camera)
         except StopIteration as ex:
             print("Camera {} is not found".format(camera_index))
 
