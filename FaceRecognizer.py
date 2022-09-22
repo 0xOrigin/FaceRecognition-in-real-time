@@ -25,6 +25,7 @@ class FaceRecognizer:
         self.abs_path = os.path.abspath(sys.argv[0] + "/..")
         self.images_path = glob.glob(os.path.join(self.abs_path, images_path, "*.*"))
         self.frame_resizing = 1.0
+        self.unknown_face_name = "Unknown"
 
     def load_encoding_images(self):
         self.known_face_encodings.clear()
@@ -53,7 +54,7 @@ class FaceRecognizer:
         face_names = []
         for face_encoding in face_encodings:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.47)
-            name = "Unknown"
+            name = self.unknown_face_name
 
             first_match_index = self.get_first_match_index(matches)
             if first_match_index > -1 and matches[first_match_index]:

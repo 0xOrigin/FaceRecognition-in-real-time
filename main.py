@@ -1,4 +1,4 @@
-from FaceDetector import FaceDetector
+from FaceDetectorControl import FaceDetectorControl
 from Utilities import CameraUtilities
 import sys
 
@@ -20,13 +20,13 @@ def main():
     print("Cameras are: {}.".format(CameraUtilities.cameras))
     print("------------------------------------------------------------------------------------")
     CameraUtilities.cameras.clear()
-    face_detector = FaceDetector(path, CameraUtilities.cameras, window_name="Face Detector")
+    face_detector = FaceDetectorControl(path, CameraUtilities.cameras, window_name="Face Detector")
     face_detector.cameras_control.add_camera(0)
     face_detector.cameras_control.add_camera(1)
     face_detector.start()
-    face_detector.cameras_control.add_camera(1)
     face_detector.cameras_control.retest_camera(0)
     face_detector.add_face(face_detector.get_absolute_path(path + "another_image/" + "Ahmed Ezzat Nasr.jpg"))
+    face_detector.start()
 
 
 if __name__ == "__main__":

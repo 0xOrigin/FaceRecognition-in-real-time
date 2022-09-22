@@ -61,7 +61,8 @@ class FrameUtilities:
 
     @staticmethod
     def show_frame(window_name, frame):
-        cv2.imshow(window_name, frame)
+        if frame is not None:
+            cv2.imshow(window_name, frame)
 
     @staticmethod
     def save_frame(frame, file_path, file_name):
@@ -76,8 +77,13 @@ class FrameUtilities:
         return cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) > 0
 
     @staticmethod
+    def encode_frame(frame):
+        return cv2.imencode('.ppm', frame)[1].tobytes()
+
+    @staticmethod
     def destroy_window(window_name):
-        cv2.destroyWindow(window_name)
+        if FrameUtilities.is_window_visible(window_name):
+            cv2.destroyWindow(window_name)
 
     @staticmethod
     def destroy_all_windows():
