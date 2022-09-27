@@ -1,5 +1,5 @@
 from FaceDetectorControl import FaceDetectorControl
-from Utilities import CameraUtilities
+from Utilities import CameraUtilities, PathUtilities
 import sys
 
 
@@ -25,7 +25,7 @@ def main():
     face_detector.cameras_control.add_camera(1)
     face_detector.start()
     face_detector.cameras_control.retest_camera(0)
-    face_detector.add_face(face_detector.get_absolute_path(path + "another_image/" + "Ahmed Ezzat Nasr.jpg"))
+    face_detector.add_face(PathUtilities.get_absolute_path_relative(path + "another_image/Ahmed Ezzat Nasr.jpg"))
     face_detector.start()
 
 
