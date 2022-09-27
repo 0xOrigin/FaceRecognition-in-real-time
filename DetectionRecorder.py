@@ -34,18 +34,19 @@ class FacesDictionary:
 class Actions:
 
     @staticmethod
-    def register_face(face_name):
+    def register_face(face_name, camera_index):
         FacesDictionary().add(face_name, datetime.now())
-        print("Welcome: {}".format(face_name))
+        print("Welcome: {} - Camera:{}".format(face_name, camera_index))
 
     @staticmethod
-    def is_exceeded_waiting_time(face_name, minutes, seconds):
-        return datetime.now() - FacesDictionary().dictionary[face_name][1] >= timedelta(minutes, seconds)
+    def is_exceeded_waiting_time(face_name, hours, minutes, seconds):
+        return datetime.now() - FacesDictionary().dictionary[face_name][1] >= timedelta(hours=hours, minutes=minutes,
+                                                                                        seconds=seconds)
 
     @staticmethod
-    def toggle_status(face_name):
+    def toggle_status(face_name, camera_index):
         FacesDictionary().toggle_status(face_name, datetime.now())
         if FacesDictionary().dictionary[face_name][0] == Status.Present.name:
-            print("Welcome: {} {}".format(face_name, datetime.now()))
+            print("Welcome: {} - Camera:{} - time: {}".format(face_name, camera_index, datetime.now()))
         else:
-            print("Goodbye: {} {}".format(face_name, datetime.now()))
+            print("Goodbye: {} - Camera:{} - time: {}".format(face_name, camera_index, datetime.now()))

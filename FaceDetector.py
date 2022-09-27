@@ -1,18 +1,20 @@
 from threading import Thread
+from FaceRecognizer import FaceRecognizer
 from Utilities import FrameUtilities
 from DetectionRecorder import FacesDictionary, Actions
 
 
 class FaceDetector:
+    colors = {"red": (0, 0, 255), "green": (0, 255, 0)}
 
-    def __init__(self, face_recognizer, camera, minutes_to_wait=0, seconds_to_wait=0, window_name="Face Detector"):
-        self.face_recognizer = face_recognizer
+    def __init__(self, camera, hours_to_wait=0, minutes_to_wait=0, seconds_to_wait=0, window_name="Face Detector"):
+        self.face_recognizer = FaceRecognizer()
         self.camera = camera
         self.window_name = self.form_window_name(window_name, self.camera.index)
         self.frame = camera.frame
         self.thread = Thread(target=self.detection_loop, args=())
-        self.colors = {"red": (0, 0, 255), "green": (0, 255, 0)}
         self.detected_faces = FacesDictionary()
+        self.hours_to_wait = hours_to_wait
         self.minutes_to_wait = minutes_to_wait
         self.seconds_to_wait = seconds_to_wait
         self.__stopped = True
@@ -25,7 +27,7 @@ class FaceDetector:
     def detect_faces(self):
         is_camera_online, frame = self.camera.read_frame()
 
-        if is_camera_online:
+        if is_camera_online and frame is not None:
             face_locations, face_names = self.face_recognizer.detect_known_faces(frame)
             for face_loc, name in zip(face_locations, face_names):
                 current_color = self.colors["red"]
@@ -44,9 +46,9 @@ class FaceDetector:
 
     def detection_action(self, name):
         if not self.detected_faces.is_registered(name):
-            Actions.register_face(name)
-        elif Actions.is_exceeded_waiting_time(name, self.minutes_to_wait, self.seconds_to_wait):
-            Actions.toggle_status(name)
+            Actions.register_face(name, self.camera.index)
+        elif Actions.is_exceeded_waiting_time(name, self.hours_to_wait, self.minutes_to_wait, self.seconds_to_wait):
+            Actions.toggle_status(name, self.camera.index)
 
     def start(self):
         if self.stopped():
