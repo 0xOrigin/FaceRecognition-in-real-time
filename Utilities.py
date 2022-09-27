@@ -1,3 +1,6 @@
+import os
+import sys
+
 import cv2
 
 
@@ -29,6 +32,17 @@ class CameraUtilities:
             CameraUtilities.add_camera(i)
             i += 1
         return len(CameraUtilities.cameras)
+
+
+class PathUtilities:
+
+    @staticmethod
+    def get_absolute_path():
+        return os.path.abspath(os.path.dirname(sys.argv[0]))
+
+    @staticmethod
+    def get_absolute_path_relative(relative_path):
+        return os.path.abspath(os.path.join(PathUtilities.get_absolute_path(), relative_path))
 
 
 class FrameUtilities:

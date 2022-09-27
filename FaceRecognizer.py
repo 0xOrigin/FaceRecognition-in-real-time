@@ -1,12 +1,10 @@
 import glob
 import os
-import sys
-from threading import RLock
-
+from threading import RLock, Thread
 import face_recognition
 import numpy as np
 
-from Utilities import FrameUtilities
+from Utilities import FrameUtilities, PathUtilities
 
 
 class FaceRecognizer:
@@ -14,6 +12,11 @@ class FaceRecognizer:
     __acquire_lock = RLock()
     known_face_encodings = []
     known_face_names = []
+    unknown_face_name = "Unknown"
+    frame_resizing = 1.0
+    number_of_upsample = 1
+    model = "cnn"
+    tolerance = 0.47
 
     def __new__(cls, *args, **kwargs):
         with FaceRecognizer.__acquire_lock:
@@ -21,19 +24,11 @@ class FaceRecognizer:
                 cls.__instance = super(FaceRecognizer, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, images_path):
-        self.abs_path = os.path.abspath(sys.argv[0] + "/..")
-        self.images_path = glob.glob(os.path.join(self.abs_path, images_path, "*.*"))
-        self.frame_resizing = 1.0
-        self.unknown_face_name = "Unknown"
-
-    def load_encoding_images(self):
-        self.known_face_encodings.clear()
-        self.known_face_names.clear()
-        for img_path in self.images_path:
-            self.add_known_face_encoding(img_path)
-            self.add_known_face_name(img_path)
-        print("Loaded {} images.".format(len(self.images_path)))
+    def load_encoding_images(self, images_path):
+        images_path = glob.glob(os.path.join(PathUtilities.get_absolute_path(), images_path, "*.*"))
+        for img_path in images_path:
+            self.add_face(img_path)
+        print("Loaded {} images.".format(len(images_path)))
 
     @staticmethod
     def get_first_match_index(matches_list):
@@ -48,12 +43,14 @@ class FaceRecognizer:
         rgb_small_frame = FrameUtilities.convert_to_rgb(small_frame)
 
         # Find all the faces and face encodings in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_small_frame, number_of_times_to_upsample=1, model="cnn")
+        face_locations = face_recognition.face_locations(rgb_small_frame,
+                                                         number_of_times_to_upsample=self.number_of_upsample,
+                                                         model=self.model)
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
         face_names = []
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.47)
+            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=self.tolerance)
             name = self.unknown_face_name
 
             first_match_index = self.get_first_match_index(matches)
@@ -78,6 +75,11 @@ class FaceRecognizer:
         (filename, ext) = os.path.splitext(basename)
         self.known_face_names.append(filename)
 
+    def __add_face(self, img_path):
+        with self.__acquire_lock:
+            self.add_known_face_encoding(img_path)
+            self.add_known_face_name(img_path)
+
     def add_face(self, img_path):
-        self.add_known_face_encoding(img_path)
-        self.add_known_face_name(img_path)
+        thread = Thread(target=self.__add_face, args=(img_path,))
+        thread.start()
