@@ -24,9 +24,11 @@ def main():
     face_detector.cameras_control.add_camera(0)
     face_detector.cameras_control.add_camera(1)
     face_detector.start()
+    face_detector.stop()
     face_detector.cameras_control.retest_camera(0)
     face_detector.add_face(PathUtilities.get_absolute_path_relative(path + "another_image/Ahmed Ezzat Nasr.jpg"))
     face_detector.start()
+    face_detector.stop()
 
 
 if __name__ == "__main__":

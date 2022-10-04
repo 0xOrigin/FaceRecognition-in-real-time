@@ -3,6 +3,7 @@ import os
 from threading import RLock, Thread
 import face_recognition
 import numpy as np
+import dlib
 
 from Utilities import FrameUtilities, PathUtilities
 
@@ -15,7 +16,7 @@ class FaceRecognizer:
     unknown_face_name = "Unknown"
     frame_resizing = 1.0
     number_of_upsample = 1
-    model = "cnn"
+    model = ["cnn" if dlib.DLIB_USE_CUDA and dlib.cuda.get_num_devices() else "hog"][0]
     tolerance = 0.47
 
     def __new__(cls, *args, **kwargs):
